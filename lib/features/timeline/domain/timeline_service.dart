@@ -1,11 +1,9 @@
-import '../../../shared/database/app_database.dart';
-
 class DayGroup {
   final String date;
-  final List<Entry> entries;
+  final List<Map<String, dynamic>> entries;
   final double totalExpense;
   final double totalIncome;
-  final List<ExtractedDatum> confirmedBills;
+  final List<Map<String, dynamic>> confirmedBills;
 
   const DayGroup({
     required this.date,
@@ -18,29 +16,32 @@ class DayGroup {
 
 class TimelineService {
   static List<DayGroup> groupByDate(
-    List<Entry> entries,
-    Map<String, List<ExtractedDatum>> billsByEntryId,
+    List<Map<String, dynamic>> entries,
+    Map<String, List<Map<String, dynamic>>> billsByEntryId,
   ) {
-    final groups = <String, List<Entry>>{};
+    final groups = <String, List<Map<String, dynamic>>>{};
     for (final entry in entries) {
-      groups.putIfAbsent(entry.date, () => []).add(entry);
+      final date = entry['date'] as String;
+      groups.putIfAbsent(date, () => []).add(entry);
     }
 
     final result = groups.entries.map((e) {
       final dateEntries = e.value;
       double expense = 0;
       double income = 0;
-      final allBills = <ExtractedDatum>[];
+      final allBills = <Map<String, dynamic>>[];
 
       for (final entry in dateEntries) {
-        final entryBills = billsByEntryId[entry.id] ?? [];
+        final entryBills = billsByEntryId[entry['id'] as String] ?? [];
         for (final bill in entryBills) {
-          if (bill.isConfirmed) {
+          if ((bill['is_confirmed'] as int) == 1) {
             allBills.add(bill);
-            if (bill.category == '收入') {
-              income += bill.parsedValue;
+            final category = bill['category'] as String;
+            final value = (bill['parsed_value'] as num).toDouble();
+            if (category == '收入') {
+              income += value;
             } else {
-              expense += bill.parsedValue;
+              expense += value;
             }
           }
         }

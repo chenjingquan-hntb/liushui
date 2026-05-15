@@ -1,14 +1,13 @@
 import '../../../shared/database/app_database.dart';
-import '../domain/timeline_service.dart';
 
 class TimelineRepository {
   final AppDatabase _db;
 
   TimelineRepository(this._db);
 
-  Stream<List<Entry>> watchAllEntries() => _db.watchAllEntries();
+  Future<List<Map<String, dynamic>>> getAllEntries() => _db.getAllEntries();
 
-  Future<Map<String, List<ExtractedDatum>>> getBillsGrouped(
+  Future<Map<String, List<Map<String, dynamic>>>> getBillsGrouped(
       List<String> entryIds) {
     return _db.getBillsGroupedByEntry(entryIds);
   }

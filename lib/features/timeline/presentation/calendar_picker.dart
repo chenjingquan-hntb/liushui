@@ -37,11 +37,11 @@ class CalendarPicker extends ConsumerWidget {
                   isSameDay(selectedDate, day),
               onDaySelected: (selectedDay, focusedDay) {
                 ref.read(selectedDateProvider.notifier).select(selectedDay);
-                ref.read(_focusedDayProvider.notifier).state = focusedDay;
+                ref.read(_focusedDayProvider.notifier).set(focusedDay);
                 Navigator.of(context).pop();
               },
               onPageChanged: (focusedDay) {
-                ref.read(_focusedDayProvider.notifier).state = focusedDay;
+                ref.read(_focusedDayProvider.notifier).set(focusedDay);
               },
               calendarStyle: CalendarStyle(
                 todayDecoration: BoxDecoration(
@@ -82,4 +82,6 @@ final _focusedDayProvider =
 class _FocusedDayNotifier extends AutoDisposeNotifier<DateTime> {
   @override
   DateTime build() => DateTime.now();
+
+  void set(DateTime date) => state = date;
 }

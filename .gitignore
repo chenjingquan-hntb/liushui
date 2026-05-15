@@ -4,10 +4,6 @@
 build/
 *.iml
 .idea/
-.vscode/
 pubspec.lock
-*.g.dart
-*.freezed.dart
-*.config.dart
 .flutter-plugins
 .flutter-plugins-dependencies

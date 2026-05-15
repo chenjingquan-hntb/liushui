@@ -49,11 +49,10 @@ class InputArea extends ConsumerWidget {
 
 /// Adapter to bridge TextEditingController with Riverpod state
 class _TextEditingControllerAdapter extends TextEditingController {
-  final String text;
   final ValueChanged<String> onChanged;
 
   _TextEditingControllerAdapter({
-    required this.text,
+    required String text,
     required this.onChanged,
   }) : super(text: text);
 

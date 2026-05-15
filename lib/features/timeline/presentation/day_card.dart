@@ -13,7 +13,7 @@ class DayCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final allText =
-        dayGroup.entries.map((e) => e.rawText).join('\n');
+        dayGroup.entries.map((e) => e['raw_text'] as String).join('\n');
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
@@ -22,7 +22,6 @@ class DayCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 日期头部
             Row(
               children: [
                 Text(
@@ -55,32 +54,30 @@ class DayCard extends StatelessWidget {
             const SizedBox(height: 8),
             const Divider(height: 1),
             const SizedBox(height: 8),
-
-            // 流水账文本
             FoldableText(
               text: allText,
               maxLines: 3,
               style: theme.textTheme.bodyMedium?.copyWith(height: 1.5),
             ),
-
-            // 账单标签行
             if (dayGroup.confirmedBills.isNotEmpty) ...[
               const SizedBox(height: 12),
               Wrap(
                 spacing: 6,
                 runSpacing: 4,
                 children: dayGroup.confirmedBills.map((bill) {
-                  final color = AppColors.categoryColor(bill.category) ??
+                  final category = bill['category'] as String;
+                  final value = (bill['parsed_value'] as num).toDouble();
+                  final color = AppColors.categoryColor(category) ??
                       theme.colorScheme.primary;
-                  final prefix = bill.category == '收入' ? '+' : '-';
+                  final prefix = category == '收入' ? '+' : '-';
                   return Chip(
                     avatar: Icon(
-                      _categoryIcon(bill.category),
+                      _categoryIcon(category),
                       size: 16,
                       color: color,
                     ),
                     label: Text(
-                      '$prefix${MoneyFormatter.format(bill.parsedValue)}',
+                      '$prefix${MoneyFormatter.format(value)}',
                       style: TextStyle(fontSize: 12, color: color),
                     ),
                     visualDensity: VisualDensity.compact,
@@ -89,24 +86,6 @@ class DayCard extends StatelessWidget {
                     side: BorderSide.none,
                   );
                 }).toList(),
-              ),
-            ],
-
-            // 图片缩略图占位
-            if (dayGroup.entries.any((e) => e.imagesJson != '[]')) ...[
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  Icon(Icons.image,
-                      size: 16, color: theme.colorScheme.onSurfaceVariant),
-                  const SizedBox(width: 4),
-                  Text(
-                    '含图片附件',
-                    style: theme.textTheme.labelSmall?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                ],
               ),
             ],
           ],

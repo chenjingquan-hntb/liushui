@@ -4,16 +4,22 @@ import '../../../../shared/database/database_providers.dart';
 import '../../domain/timeline_service.dart';
 
 final timelineDayGroupsProvider = StreamProvider<List<DayGroup>>((ref) {
-  final db = ref.watch(appDatabaseProvider);
+  final dbAsync = ref.watch(appDatabaseProvider);
 
-  return db.watchAllEntries().asyncMap((entries) async {
-    if (entries.isEmpty) return [];
-
-    final entryIds = entries.map((e) => e.id).toList();
-    final billsByEntryId = await db.getBillsGroupedByEntry(entryIds);
-
-    return TimelineService.groupByDate(entries, billsByEntryId);
-  });
+  return dbAsync.when(
+    data: (db) async* {
+      final entries = await db.getAllEntries();
+      if (entries.isEmpty) {
+        yield [];
+        return;
+      }
+      final entryIds = entries.map((e) => e['id'] as String).toList();
+      final billsByEntryId = await db.getBillsGroupedByEntry(entryIds);
+      yield TimelineService.groupByDate(entries, billsByEntryId);
+    },
+    loading: () => const Stream.empty(),
+    error: (_, __) => const Stream.empty(),
+  );
 });
 
 final selectedDateProvider =

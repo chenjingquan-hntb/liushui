@@ -6,7 +6,6 @@ import 'input_area.dart';
 import 'quick_action_bar.dart';
 import 'providers/entry_providers.dart';
 import '../../parser/presentation/extracted_bills_sheet.dart';
-import '../../parser/presentation/providers/parser_providers.dart';
 
 class EntryPage extends ConsumerStatefulWidget {
   const EntryPage({super.key});
@@ -83,8 +82,6 @@ class _EntryPageState extends ConsumerState<EntryPage> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) async {

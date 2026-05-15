@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../core/theme/app_colors.dart';
 import '../../../shared/models/extracted_data.dart';
 import 'providers/parser_providers.dart';
 import 'bill_confirm_tile.dart';

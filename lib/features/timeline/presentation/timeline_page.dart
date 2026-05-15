@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../core/extensions/datetime_ext.dart';
-import '../../../core/utils/money_formatter.dart';
 import '../../../shared/widgets/empty_state.dart';
 import 'providers/timeline_providers.dart';
 import 'day_card.dart';
 import 'calendar_picker.dart';
-import '../domain/timeline_service.dart';
 
 class TimelinePage extends ConsumerWidget {
   const TimelinePage({super.key});

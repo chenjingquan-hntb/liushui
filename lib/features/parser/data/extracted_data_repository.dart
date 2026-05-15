@@ -12,19 +12,19 @@ class ExtractedDataRepository {
       String entryId, List<ExtractedBillModel> bills) async {
     if (bills.isEmpty) return;
 
-    final companions = bills.map((b) => ExtractedDataCompanion.insert(
-          id: b.id ?? _uuid.v4(),
-          entryId: entryId,
-          type: 'bill',
-          rawSegment: b.rawSegment,
-          parsedValue: b.parsedValue,
-          unit: Value(b.unit),
-          category: Value(b.category),
-          confidence: Value(b.confidence),
-          isConfirmed: Value(b.isConfirmed),
-          createdAt: DateTime.now(),
-        ));
+    final items = bills.map((b) => {
+          'id': b.id ?? _uuid.v4(),
+          'entry_id': entryId,
+          'type': 'bill',
+          'raw_segment': b.rawSegment,
+          'parsed_value': b.parsedValue,
+          'unit': b.unit,
+          'category': b.category,
+          'confidence': b.confidence,
+          'is_confirmed': b.isConfirmed ? 1 : 0,
+          'created_at': DateTime.now().toIso8601String(),
+        }).toList();
 
-    await _db.insertExtractedDataList(companions.toList());
+    await _db.insertExtractedDataList(items);
   }
 }

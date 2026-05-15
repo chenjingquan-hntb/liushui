@@ -1,12 +1,9 @@
-import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import '../../../../core/utils/debounce.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../shared/database/database_providers.dart';
-import '../../../../shared/database/app_database.dart';
 import '../../../../shared/models/extracted_data.dart';
-import '../../../parser/domain/nlp_engine.dart';
 import '../../../parser/presentation/providers/parser_providers.dart';
 
 class ArchiveResult {
@@ -62,17 +59,24 @@ class DraftManagerNotifier extends Notifier<DraftState> {
 
   @override
   DraftState build() {
-    _loadDraft();
+    // 延迟加载草稿，避免在 build 期间触发副作用
+    Future.microtask(() => _loadDraft());
     return const DraftState();
   }
 
   Future<void> _loadDraft() async {
-    final db = ref.read(appDatabaseProvider);
-    final draft = await db.getCurrentDraft();
-    if (draft != null) {
-      state = DraftState(text: draft.rawText, lastSavedAt: draft.updatedAt);
-      ref.read(inputTextProvider.notifier).set(draft.rawText);
-    }
+    final dbAsync = ref.read(appDatabaseProvider);
+    dbAsync.whenData((db) async {
+      final draft = await db.getCurrentDraft();
+      if (draft != null) {
+        final text = draft['raw_text'] as String;
+        state = DraftState(
+          text: text,
+          lastSavedAt: DateTime.tryParse(draft['updated_at'] as String? ?? ''),
+        );
+        ref.read(inputTextProvider.notifier).set(text);
+      }
+    });
   }
 
   void onTextChanged(String text) {
@@ -81,24 +85,31 @@ class DraftManagerNotifier extends Notifier<DraftState> {
   }
 
   Future<void> _saveDraft(String text) async {
-    final db = ref.read(appDatabaseProvider);
-    state = DraftState(text: text, lastSavedAt: state.lastSavedAt, isSaving: true);
+    final dbAsync = ref.read(appDatabaseProvider);
+    final db = dbAsync.valueOrNull;
+    if (db == null) return;
+
+    state = DraftState(
+        text: text, lastSavedAt: state.lastSavedAt, isSaving: true);
 
     if (text.trim().isEmpty) {
       await db.deleteDraft();
     } else {
-      await db.upsertDraft(DraftsCompanion.insert(
+      await db.upsertDraft(
         id: 'current',
         rawText: text,
-        updatedAt: DateTime.now(),
-      ));
+        updatedAt: DateTime.now().toIso8601String(),
+      );
     }
 
     state = DraftState(text: text, lastSavedAt: DateTime.now());
   }
 
   Future<ArchiveResult> archiveEntry() async {
-    final db = ref.read(appDatabaseProvider);
+    final dbAsync = ref.read(appDatabaseProvider);
+    final db = dbAsync.valueOrNull;
+    if (db == null) return const ArchiveResult(entryId: '', bills: []);
+
     final text = state.text.trim();
     if (text.isEmpty) return const ArchiveResult(entryId: '', bills: []);
 
@@ -107,13 +118,13 @@ class DraftManagerNotifier extends Notifier<DraftState> {
     final dateStr =
         '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
 
-    await db.insertEntry(EntriesCompanion.insert(
+    await db.insertEntry(
       id: entryId,
       date: dateStr,
-      createdAt: now,
-      updatedAt: now,
+      createdAt: now.toIso8601String(),
+      updatedAt: now.toIso8601String(),
       rawText: text,
-    ));
+    );
 
     await db.deleteDraft();
     state = const DraftState();
@@ -128,9 +139,4 @@ class DraftManagerNotifier extends Notifier<DraftState> {
     return ArchiveResult(entryId: entryId, bills: bills);
   }
 
-  @override
-  void dispose() {
-    _debouncer.cancel();
-    super.dispose();
-  }
 }

@@ -19,12 +19,9 @@ class FoldableText extends StatefulWidget {
 
 class _FoldableTextState extends State<FoldableText> {
   bool _expanded = false;
-  bool _isOverflow = false;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     if (_expanded) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,

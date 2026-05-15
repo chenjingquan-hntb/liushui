@@ -15,8 +15,6 @@ class ConfirmChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     if (isRejected == true) {
       return Chip(
         avatar: const Icon(Icons.close, size: 16, color: AppColors.rejected),
