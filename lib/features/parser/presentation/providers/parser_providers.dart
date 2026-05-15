@@ -1,8 +1,8 @@
-import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import '../../domain/nlp_engine.dart';
 import '../../../../shared/database/database_providers.dart';
+import '../../../../shared/database/app_database.dart';
 import '../../../../shared/models/extracted_data.dart';
 
 final nlpEngineProvider = Provider.autoDispose<NlpEngine>((ref) {
@@ -30,18 +30,19 @@ class PendingBillsNotifier
     newList[index] = bill;
     state = newList;
 
-    final uuid = const Uuid().v4();
-    await db.insertExtractedDataRaw(
-      id: uuid,
+    final id = const Uuid().v4();
+    await db.insertExtractedData(ExtractedDataCompanion.insert(
+      id: id,
       entryId: entryId,
       type: 'bill',
       rawSegment: bill.rawSegment,
       parsedValue: bill.parsedValue,
-      unit: bill.unit,
-      category: bill.category,
-      confidence: bill.confidence,
-      isConfirmed: true,
-    );
+      unit: Value(bill.unit),
+      category: Value(bill.category),
+      confidence: Value(bill.confidence),
+      isConfirmed: Value(true),
+      createdAt: DateTime.now(),
+    ));
   }
 
   Future<void> rejectBill(String entryId, int index) async {
@@ -51,18 +52,19 @@ class PendingBillsNotifier
     newList.removeAt(index);
     state = newList;
 
-    final uuid = const Uuid().v4();
-    await db.insertExtractedDataRaw(
-      id: uuid,
+    final id = const Uuid().v4();
+    await db.insertExtractedData(ExtractedDataCompanion.insert(
+      id: id,
       entryId: entryId,
       type: 'bill',
       rawSegment: bill.rawSegment,
       parsedValue: bill.parsedValue,
-      unit: bill.unit,
-      category: bill.category,
-      confidence: bill.confidence,
-      isConfirmed: false,
-    );
+      unit: Value(bill.unit),
+      category: Value(bill.category),
+      confidence: Value(bill.confidence),
+      isConfirmed: Value(false),
+      createdAt: DateTime.now(),
+    ));
   }
 
   Future<void> updateCategory(int index, String category) async {
